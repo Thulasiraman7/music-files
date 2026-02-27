@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Just Listen</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+    color: white;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.header {
+    padding: 18px 25px;
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+.container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.player {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    padding: 35px 30px;
+    width: 320px;
+    text-align: center;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+}
+
+.song-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #e2e8f0;
+}
+
+/* Progress bar */
+.progress-container {
+    width: 100%;
+    height: 6px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 10px 0 5px;
+    position: relative;
+}
+
+.progress {
+    height: 100%;
+    width: 0%;
+    background: #22c55e;
+    border-radius: 5px;
+    position: relative;
+}
+
+/* White draggable circle */
+.progress::after {
+    content: "";
+    position: absolute;
+    right: -7px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 14px;
+    height: 14px;
+    background: white;
+    border-radius: 50%;
+    box-shadow: 0 0 6px rgba(0,0,0,0.4);
+}
+
+.time {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #cbd5e1;
+    margin-bottom: 15px;
+}
+
+.controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 25px;
+}
+
+button {
+    border: none;
+    cursor: pointer;
+    border-radius: 50%;
+    background: #22c55e;
+    color: white;
+    transition: 0.25s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+button:hover {
+    transform: scale(1.08);
+    background: #16a34a;
+}
+
+.small-btn {
+    width: 45px;
+    height: 45px;
+    font-size: 16px;
+}
+
+.play-btn {
+    width: 65px;
+    height: 65px;
+    font-size: 22px;
+    box-shadow: 0 0 15px rgba(34,197,94,0.6);
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="header">Just Listen</div>
+
+<div class="container">
+<div class="player">
+
+<div class="song-title" id="songTitle">Song</div>
+
+<div class="progress-container" id="progressContainer">
+    <div class="progress" id="progress"></div>
+</div>
+
+<div class="time">
+    <span id="currentTime">0:00</span>
+    <span id="duration">0:00</span>
+</div>
+
+<div class="controls">
+    <button class="small-btn" onclick="prevSong()">⏮</button>
+    <button class="play-btn" onclick="togglePlay()" id="playBtn">▶</button>
+    <button class="small-btn" onclick="nextSong()">⏭</button>
+</div>
+
+<audio id="audio" crossorigin="anonymous" preload="metadata"></audio>
+
+</div>
+</div>
+
+<script>
+
+const songs = [
+{
+title: "Anbe Aruyire",
+url: "https://raw.githubusercontent.com/Thulasiraman7/music-files/main/Anbe-Aaruyire.mp3"
+},
+{
+title: "Ennai Kollathey",
+url: "https://raw.githubusercontent.com/Thulasiraman7/music-files/main/Ennai-Kollathey.mp3"
+},
+{
+title: "Kadhali Album",
+url: "https://raw.githubusercontent.com/Thulasiraman7/music-files/main/Kadhali-Album.mp3"
+},
+{
+title: "Indru Netru Nalai",
+url: "https://raw.githubusercontent.com/Thulasiraman7/music-files/main/Indru-Netru-Naalai-1.mp3"
+},
+{
+title: "Enna Nadanthalum",
+url: "https://raw.githubusercontent.com/Thulasiraman7/music-files/main/Enna-Nadanthalum-MassTamilan.com.mp3"
+},
+{
+title: "Love Me Again",
+url: "https://raw.githubusercontent.com/Thulasiraman7/music-files/main/Havoc-Brothers-Love-Me-Again.mp3"
+},
+{
+title: "Kadhale Kadhale",
+url: "https://raw.githubusercontent.com/Thulasiraman7/music-files/main/Kadhale-Kadhale.mp3"
+}
+];
+
+let currentIndex = 0;
+
+const audio = document.getElementById("audio");
+const playBtn = document.getElementById("playBtn");
+const title = document.getElementById("songTitle");
+const progress = document.getElementById("progress");
+const progressContainer = document.getElementById("progressContainer");
+const currentTimeEl = document.getElementById("currentTime");
+const durationEl = document.getElementById("duration");
+
+function loadSong(index) {
+    audio.src = songs[index].url;
+    title.innerText = songs[index].title;
+}
+
+function togglePlay() {
+    if (audio.paused) {
+        audio.play().then(() => {
+            playBtn.innerText = "⏸";
+        });
+    } else {
+        audio.pause();
+        playBtn.innerText = "▶";
+    }
+}
+
+function nextSong() {
+    currentIndex = (currentIndex + 1) % songs.length;
+    loadSong(currentIndex);
+    audio.play();
+    playBtn.innerText = "⏸";
+}
+
+function prevSong() {
+    currentIndex = (currentIndex - 1 + songs.length) % songs.length;
+    loadSong(currentIndex);
+    audio.play();
+    playBtn.innerText = "⏸";
+}
+
+function formatTime(sec) {
+    const minutes = Math.floor(sec / 60) || 0;
+    const seconds = Math.floor(sec % 60) || 0;
+    return minutes + ":" + seconds.toString().padStart(2, "0");
+}
+
+audio.addEventListener("loadedmetadata", () => {
+    durationEl.textContent = formatTime(audio.duration);
+});
+
+audio.addEventListener("timeupdate", () => {
+    const percent = (audio.currentTime / audio.duration) * 100;
+    progress.style.width = percent + "%";
+    currentTimeEl.textContent = formatTime(audio.currentTime);
+});
+
+/* Drag functionality */
+let isDragging = false;
+
+progressContainer.addEventListener("mousedown", () => isDragging = true);
+document.addEventListener("mouseup", () => isDragging = false);
+
+document.addEventListener("mousemove", (e) => {
+    if (!isDragging) return;
+
+    const rect = progressContainer.getBoundingClientRect();
+    const offsetX = e.clientX - rect.left;
+    const width = rect.width;
+
+    const percent = Math.max(0, Math.min(1, offsetX / width));
+    audio.currentTime = percent * audio.duration;
+});
+
+progressContainer.addEventListener("click", (e) => {
+    const width = progressContainer.clientWidth;
+    const clickX = e.offsetX;
+    audio.currentTime = (clickX / width) * audio.duration;
+});
+
+loadSong(currentIndex);
+
+</script>
+
+</body>
+</html>
